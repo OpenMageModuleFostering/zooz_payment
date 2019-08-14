@@ -8,7 +8,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
     protected $_isInitializeNeeded = true;
     protected $_canUseInternal = false;
     protected $_canUseForMultishipping = false;
-
+  
     /**
      * Return Order place redirect url
      *
@@ -29,6 +29,14 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
     public function getIsSandBox() {
         return $config = Mage::getStoreConfig('payment/zoozpayment/sandbox_flag');
+    }
+
+    public function getSandboxUrl(){
+	return $config = Mage::getStoreConfig('payment/zoozpayment/zooz_sandbox_url');
+    }
+
+    public function getProductionUrl(){
+	return $config = Mage::getStoreConfig('payment/zoozpayment/zooz_production_url');
     }
 
     /**
@@ -62,11 +70,11 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
             if ($isSandbox == true) {
 
-                $zoozServer = 'https://sandbox.zooz.co';
+                $zoozServer =  $this->getSandboxUrl();
                 $url = $zoozServer . "/mobile/SecuredWebServlet";
             } else {
 
-                $zoozServer = "https://app.zooz.com";
+                $zoozServer = $this->getProductionUrl();
                 $url = $zoozServer . "/mobile/SecuredWebServlet";
             }
 
@@ -164,11 +172,12 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
 
         if ($postFields != '') {
+		$postFields.="&featureProvider=102";
+		$postFields.="&dynamicShippingUrl=" . Mage::getUrl('zoozpayment/estimate/index');
             if (Mage::getStoreConfig('sales/gift_options/allow_order', null)) {
-                $postFields.="&featureProvider=102";
-                $postFields.="&providerSupportedFeatures=[100]";
+                $postFields.="&providerSupportedFeatures=[100,104]";
             } else {
-                $postFields.="&providerSupportedFeatures=";
+                $postFields.="&providerSupportedFeatures=[104]";
             }
 
            // Mage::log($postFields);    
@@ -186,11 +195,11 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
             if ($isSandbox == true) {
 
-                $zoozServer = 'https://sandbox.zooz.co';
+                $zoozServer = $this->getSandboxUrl();
                 $url = $zoozServer . "/mobile/SecuredWebServlet";
             } else {
 
-                $zoozServer = "https://app.zooz.com";
+                $zoozServer = $this->getProductionUrl();
                 $url = $zoozServer . "/mobile/SecuredWebServlet";
             }
 
@@ -238,7 +247,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
             parse_str($result);
 
-
+	//	Mage::log($result);
 
             if ($statusCode == 0) {
                 // Get token from ZooZ server
@@ -495,11 +504,11 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
         if ($isSandbox == true) {
 
-            $zoozServer = 'https://sandbox.zooz.co';
+            $zoozServer = $this->getSandboxUrl();
             $url = $zoozServer . "/mobile/SecuredWebServlet";
         } else {
 
-            $zoozServer = "https://app.zooz.com";
+            $zoozServer = $this->getProductionUrl();
             $url = $zoozServer . "/mobile/SecuredWebServlet";
         }
         // is cURL installed yet?
@@ -567,11 +576,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
         //Get Gift information from Params
         $giftInfo =  $params['gift'];     
-        //print_r($giftInfo);
-        //die();
-                
-
-         //Mage::log($info);
+       
         //
         Mage::getModel('zoozpayment/order')->saveOrder($info,$giftInfo);
         // create order with billding return

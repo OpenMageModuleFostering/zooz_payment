@@ -10,8 +10,8 @@
 		private $ch;
 		
 		
-		const SANDBOX_URL =	"https://sandbox.zooz.co";
-		const PRODUCTION_URL = "https://app.zooz.com";
+		#const SANDBOX_URL = "http://dev.zooz.co:9090";#  Mage::getModel('zoozpayment/standard')->getSandboxUrl();
+		#const PRODUCTION_URL = ""; #Mage::getStoreConfig('payment/zoozpayment/zooz_production_url');
 
 
 
@@ -26,7 +26,6 @@
 		 * @throws ZooZException
 		 */
 		function __construct($zoozDeveloperId, $zoozServerAPIKey, $isSandbox) {
-			
 			if (!function_exists('curl_init')){
 				throw new ZooZException('Sorry cURL is not installed!');
 			}
@@ -44,10 +43,11 @@
 			$zoozServer;
 				
 			if ($isSandbox) {
-				$zoozServer = self::SANDBOX_URL;
+				#Mage::log(Mage::getModel('zoozpayment/standard')->getSandboxUrl());
+				$zoozServer = Mage::getModel('zoozpayment/standard')->getSandboxUrl(); #self::SANDBOX_URL;
 				curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
 			} else {
-				$zoozServer = self::PRODUCTION_URL;
+				$zoozServer = Mage::getModel('zoozpayment/standard')->getProductionUrl(); #self::PRODUCTION_URL;
 			}
 				
 			$zoozServer .= "/mobile/ExtendedServerAPI";
@@ -203,7 +203,8 @@
 			curl_setopt($this->ch, CURLOPT_POSTFIELDS, $data);
 			$chResult = curl_exec($this->ch);
 			$chResult = trim($chResult, "\n");
-			
+			//Mage::log($chResult);
+
 			$errorMsg = "Error communicating with ZooZ server, please check your network connection";
 			
 			$errorCode = -1;
@@ -211,10 +212,12 @@
 			if (empty($chResult)) {
 				throw new ZooZException($errorMsg);
 			}
-			
+
+
+
 			$decoded = json_decode(trim($chResult), TRUE); 
-			
-			if ($decoded[ResponseStatus] != 0) {
+			//Mage::log($decoded);
+			if ($decoded['ResponseStatus'] != 0) {
 				if (!empty($decoded[ResponseObject]) && !empty($decoded[ResponseObject][errorMessage])) {
 					$errorMsg = $decoded[ResponseObject][errorMessage];
 					$errorCode = $decoded[ResponseStatus];

@@ -35,6 +35,7 @@ class ZooZ_ZoozPayment_Model_Order extends Mage_Core_Model_Abstract {
             // if return gift message
             // get value from $info 
             $return_gift = true;
+	#Mage::log($info);
             if ($return_gift) {
                 $gift_customer = 0;
                 if ($customer->getId()) {
@@ -82,11 +83,7 @@ class ZooZ_ZoozPayment_Model_Order extends Mage_Core_Model_Abstract {
 
                 $shippingAddress = Mage::getModel('sales/order_address');
                 $shipp_address = $info->shippingAddress;
-                //$country_id =  Mage::getModel('directory/country')->load($info->country)->getCountryId();
-				//Mage::log($country_id);
-				//Mage::log($shipp_address->countryCode);
-			//	Mage::log("country " . $shipp_address->country);
-			//	Mage::log("country " . $shipp_address->countryCode);
+                //   $country_id =  Mage::getModel('directory/country')->load($info->country)->getCountryId();
                 $shippingAddress->setStoreId($storeId)
                         ->setAddressType(Mage_Sales_Model_Quote_Address::TYPE_SHIPPING)
                         ->setCustomerId($customer->getId())
@@ -94,7 +91,7 @@ class ZooZ_ZoozPayment_Model_Order extends Mage_Core_Model_Abstract {
                         ->setLastname($shipp_address->lastName)
                         ->setStreet($shipp_address->street)
                         ->setCity($shipp_address->city)
-                        ->setCountry_id($shipp_address->countryCode)
+                        ->setCountry_id($shipp_address->country)
                         ->setRegion($shipp_address->state)
                         ->setPostcode($shipp_address->zipCode)
                         ->setTelephone($user->phoneNumber);
@@ -249,12 +246,14 @@ class ZooZ_ZoozPayment_Model_Order extends Mage_Core_Model_Abstract {
 
 
 
-            $shipping_price = $info->shippingAmount;
+	    	$shipping_price = $info->shippingAmount;
             $shipping_name = $info->shippingMethod;
+            $shipping_carrier_name = $info->shippingCarrierName;
+            $shipping_carrier_code = $info->shippingCarrierCode;
             $order->setSubtotal($subTotal)
-                    ->setShipping_method('fixed')
-                    ->setShippingDescription($shipping_name)
-                    ->setBaseShippingAmount($shipping_name)
+                    ->setShippingMethod($shipping_carrier_code)
+                    ->setShippingDescription($shipping_name . " (" . $shipping_carrier_name .")")
+                    ->setBaseShippingAmount($shipping_price)
                     ->setShippingAmount($shipping_price)
                     ->setBaseSubtotal($baseSubTotal + $shipping_price)
                     ->setBaseTotalDue($subTotal + $shipping_price)

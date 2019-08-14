@@ -1,0 +1,18 @@
+<?php
+
+if ($this->getResult()) {
+    $response = array();
+    foreach ($this->getResult() as $code => $_rates) {
+
+        $arr = array();
+        foreach ($_rates as $_rate) {
+            if (!$_rate->getErrorMessage()) {
+                $rate_name = $_rate->getMethodTitle();
+                $arr[] = array('name' => $rate_name, 'price' => $_rate->getPrice());
+            }
+        }
+        $response[] = array('carrierName' => $this->getCarrierName($code),'carrierCode' => $code, 'rates' => $arr);
+    }
+    echo json_encode($response);
+}
+?>

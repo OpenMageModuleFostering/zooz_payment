@@ -79,7 +79,23 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </app_unique_id>
-                        <sort_order translate="label">
+			<zooz_sandbox_url>
+                            <label>Zooz sandbox URL</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>130</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </zooz_sandbox_url> 
+			<zooz_production_url>
+                            <label>Zooz production URL</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>131</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </zooz_production_url>
+                      <sort_order translate="label">
                             <label>Sort Order</label>
                             <frontend_type>text</frontend_type>
                         </sort_order>

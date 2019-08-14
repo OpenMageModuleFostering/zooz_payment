@@ -24,6 +24,8 @@ class TransactionDetails {
 	public $shippingAddress;
 	public $shippingMethod;
 	public $shippingAmount;
+	public $shippingCarrierCode;
+	public $shippingCarrierName;
 
 	function __construct($jsonObj) {
 		
@@ -56,7 +58,8 @@ class TransactionDetails {
 		}
 		$this->shippingMethod = $jsonObj[shippingMethod];
 		$this->shippingAmount = $jsonObj[shippingAmount];
-		
+		$this->shippingCarrierCode = $jsonObj[shippingCarrierCode];
+		 $this->shippingCarrierName = $jsonObj[shippingCarrierName];
 	}
 	
 	

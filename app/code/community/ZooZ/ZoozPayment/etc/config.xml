@@ -38,6 +38,12 @@
                 <payment_action>sale</payment_action>
                 <allowspecific>0</allowspecific>
                 <sort_order>1</sort_order>
+		<zooz_sandbox_url>https://sandbox.zooz.co</zooz_sandbox_url>
+		<zooz_production_url>https://app.zooz.com</zooz_production_url>
+		<app_key>6fe2b3eb-3017-4d84-a5df-c14d675008ae</app_key>
+		<app_unique_id>com.yourcompany.DemoZooZSDK.magento</app_unique_id>
+		<zooz_serverkey>FMJM7QYXIOO2Y55FXBK7GTHUWE</zooz_serverkey>
+		<zooz_useremail>ronen@tactusmobile.com</zooz_useremail>
             </zoozpayment>
         </payment>
     </default>
