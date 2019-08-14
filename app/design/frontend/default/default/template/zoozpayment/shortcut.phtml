@@ -1,0 +1,52 @@
+<?php
+
+if (Mage::getStoreConfig('payment/zoozpayment/sandbox_flag')) {
+	$js = "https://sandbox.zooz.co/mobile/js/zooz-ext-web-ajax.js";
+}else{
+	$js = "https://app.zooz.com/mobile/js/zooz-ext-web-ajax.js";
+}
+?>
+ <script src="<?php echo $js; ?>"></script> 
+ 
+ 
+<br/>
+<br/>
+<a id="zooz-payment-link" href="<?php echo $this->getUrl('zoozpayment/cart/add');?>">
+	<img src="<?php echo $this->getSkinUrl('zooz/images/fastcheckout.png');?>" alt="ZooZ Payment" title="ZooZ Payment" />
+</a>
+<img id="zooz-payment-loading" style="display: none; margin-left: 10px;" src="<?php echo $this->getSkinUrl('zooz/images/loading.gif');?>" alt="loading" title="loading" />
+<script type="text/javascript">
+
+jQuery(document).ready(function($){	
+	jQuery('#zooz-payment-link').click(function($){
+		var frm = jQuery('#product_addtocart_form');
+		var url = jQuery(this).attr('href'); 		
+		<?php if(Mage::getModel('zoozpayment/standard')->getIsSandBox()): ?>
+		var sandbox = true;
+		<?php else: ?>
+		var sandbox = false;
+		<?php endif; ?>
+		jQuery('#zooz-payment-loading').show();
+        jQuery.ajax({
+            type: frm.attr('method'),
+            url: url,
+            data: frm.serialize(),
+            success: function (response) {
+            	jQuery('#zooz-payment-loading').hide();
+                eval(response);
+				zoozStartCheckout({
+					token : data.token,
+					uniqueId : "<?php echo Mage::getModel('zoozpayment/standard')->getAppUniqueId(); ?>",
+					isSandbox : sandbox,
+					returnUrl : "<?php echo $this->getUrl('zoozpayment/standard/successexpress');?>",
+					cancelUrl : "<?php echo $this->getUrl('zoozpayment/standard/cancel');?>"
+					
+				});
+            }
+        });
+        return false;
+    });
+});
+
+</script>
+

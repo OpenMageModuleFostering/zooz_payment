@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/ZooZ_payment",
+    "type": "magento-module",
+    "license": "GNU-General-Public-License",
+    "homepage": "",
+    "description": "Checkout module for higher conversions",
+    "authors": [
+    {
+        "name": "ZooZ Payments",
+        "email": "info@zooz.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

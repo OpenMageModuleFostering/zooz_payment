@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <ZooZ_ZoozPayment>
+            <version>0.1.0</version>
+        </ZooZ_ZoozPayment>
+    </modules>
+    <global>
+        <helpers>
+            <zoozpayment>
+                <class>ZooZ_ZoozPayment_Helper</class>
+            </zoozpayment>
+        </helpers>
+    
+        <models>
+            <zoozpayment>
+                <class>ZooZ_ZoozPayment_Model</class>
+            </zoozpayment>
+        </models>
+        <helpers>
+            <zoozpayment>
+                <class>ZooZ_ZoozPayment_Helper</class>
+            </zoozpayment>
+        </helpers>
+        <blocks>
+            <zoozpayment>
+                <class>ZooZ_ZoozPayment_Block</class>
+            </zoozpayment>
+        </blocks>        
+    </global>
+    <default>
+        <payment>
+            <zoozpayment>
+                <model>zoozpayment/standard</model>
+                <active>1</active>
+                <order_status>pending</order_status>
+                <title>ZooZ Payment</title>
+                <payment_action>sale</payment_action>
+                <allowspecific>0</allowspecific>
+                <sort_order>1</sort_order>
+            </zoozpayment>
+        </payment>
+    </default>
+
+
+    <frontend>
+        <routers>
+            <zoozpayment>
+                <use>standard</use>
+                <args>
+                    <module>ZooZ_ZoozPayment</module>
+                    <frontName>zoozpayment</frontName>
+                </args>
+            </zoozpayment>
+        </routers>
+        <layout>
+            <updates>
+                <zoozpayment>
+                    <file>zoozpayment.xml</file>
+                </zoozpayment>
+            </updates>
+        </layout>
+    </frontend>
+ 
+</config> 
