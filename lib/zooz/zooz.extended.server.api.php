@@ -152,11 +152,11 @@
 			$nvps->add("transactionID", $transactionID);
 			
 			
-			
-			if (!empty($amount)) {
+			if ($amount != null) {
 				$nvps->add("amount", $amount);
 			}
 			
+
 			if (!empty($invoice)) {
 				$nvps->add("invoice", json_encode($invoice));
 			}
@@ -218,14 +218,14 @@
 			$decoded = json_decode(trim($chResult), TRUE); 
 			//Mage::log($decoded);
 			if ($decoded['ResponseStatus'] != 0) {
-				if (!empty($decoded[ResponseObject]) && !empty($decoded[ResponseObject][errorMessage])) {
-					$errorMsg = $decoded[ResponseObject][errorMessage];
-					$errorCode = $decoded[ResponseStatus];
+				if (!empty($decoded['ResponseObject']) && !empty($decoded['ResponseObject']['errorMessage'])) {
+					$errorMsg = $decoded['ResponseObject']['errorMessage'];
+					$errorCode = $decoded['ResponseStatus'];
 				}
 				throw new ZooZException($errorMsg, $errorCode);
 			}
 			
-			return $decoded[ResponseObject];
+			return $decoded['ResponseObject'];
 				
 		}
 		

@@ -7,8 +7,93 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
     protected $_code = 'zoozpayment';
     protected $_isInitializeNeeded = true;
     protected $_canUseInternal = false;
-    protected $_canUseForMultishipping = false;
-  
+    protected $_canUseForMultishipping = true;
+    protected $_canAuthorize = true;
+    protected $_canCapture = true;
+    protected $_canRefund = true;
+    protected $_canRefundInvoicePartial = true;
+    protected $_canCapturePartial = true;
+
+#    protected $_canVoid = true;
+
+    public function canCapture() {
+        return $this->_canCapture;
+    }
+
+    public function canCapturePartial() {
+        return $this->_canCapturePartial;
+    }
+
+    public function initialize($paymentAction, $stateObject) {
+        $state = Mage_Sales_Model_Order::STATE_PENDING_PAYMENT;
+        $stateObject->setState($state);
+        $stateObject->setStatus('pending_payment');
+        $stateObject->setIsNotified(false);
+    }
+
+    public function canRefund() {
+        return $this->_canRefund;
+    }
+
+    public function canRefundInvoicePartial() {
+        return $this->_canRefundInvoicePartial;
+    }
+
+    public function refund(Varien_Object $payment, $amount) {
+        $isSandbox = false;
+        if ($this->getIsSandBox()) {
+            $isSandbox = true;
+        }
+        $zooz_useremail = Mage::getStoreConfig('payment/zoozpayment/zooz_useremail');
+        $zooz_serverkey = Mage::getStoreConfig('payment/zoozpayment/zooz_serverkey');
+
+        if ($isSandbox) {
+            $zooz = new ZooZExtendedServerAPI($zooz_useremail, $zooz_serverkey, true);
+        } else {
+            $zooz = new ZooZExtendedServerAPI($zooz_useremail, $zooz_serverkey, false);
+        }
+
+        //  $info = $zooz->getTransactionDetailsByTransactionID($payment->getLastTransId());
+
+        if ($zooz->refundTransaction($payment->getLastTransId(), $amount)) {
+            $payment->setTransactionId($payment->getLastTransId());
+            $payment->setIsTransactionClosed(false);
+            $payment->setStatus(Mage_Payment_Model_Method_Abstract::STATUS_APPROVED);
+        } else {
+            $this->showException('Error in you refund request');
+        }
+        return $this;
+    }
+
+    public function capture(Varien_Object $payment, $amount) {
+        //code execute to getway
+        //commitTransaction($transactionID, $amount=NULL, $invoice=NULL)
+        $isSandbox = false;
+        if ($this->getIsSandBox()) {
+            $isSandbox = true;
+        }
+        $zooz_useremail = Mage::getStoreConfig('payment/zoozpayment/zooz_useremail');
+        $zooz_serverkey = Mage::getStoreConfig('payment/zoozpayment/zooz_serverkey');
+
+        if ($isSandbox) {
+            $zooz = new ZooZExtendedServerAPI($zooz_useremail, $zooz_serverkey, true);
+        } else {
+            $zooz = new ZooZExtendedServerAPI($zooz_useremail, $zooz_serverkey, false);
+        }
+
+	if($amount == 0){
+	    $payment->setTransactionId($payment->getLastTransId());
+            $payment->setIsTransactionClosed(false);
+            $payment->setStatus(Mage_Payment_Model_Method_Abstract::STATUS_APPROVED);
+
+        }else if ($zooz->commitTransaction($payment->getLastTransId(), $amount)) {
+            $payment->setTransactionId($payment->getLastTransId());
+            $payment->setIsTransactionClosed(false);
+            $payment->setStatus(Mage_Payment_Model_Method_Abstract::STATUS_APPROVED);
+        }
+        return $this;
+    }
+
     /**
      * Return Order place redirect url
      *
@@ -31,12 +116,12 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
         return $config = Mage::getStoreConfig('payment/zoozpayment/sandbox_flag');
     }
 
-    public function getSandboxUrl(){
-	return $config = Mage::getStoreConfig('payment/zoozpayment/zooz_sandbox_url');
+    public function getSandboxUrl() {
+        return $config = Mage::getStoreConfig('payment/zoozpayment/zooz_sandbox_url');
     }
 
-    public function getProductionUrl(){
-	return $config = Mage::getStoreConfig('payment/zoozpayment/zooz_production_url');
+    public function getProductionUrl() {
+        return $config = Mage::getStoreConfig('payment/zoozpayment/zooz_production_url');
     }
 
     /**
@@ -44,13 +129,6 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
      * @param string $paymentAction
      * @param Varien_Object
      */
-    public function initialize($paymentAction, $stateObject) {
-        $state = Mage_Sales_Model_Order::STATE_PENDING_PAYMENT;
-        $stateObject->setState($state);
-        $stateObject->setStatus('pending_payment');
-        $stateObject->setIsNotified(false);
-    }
-
     public function processing($start = false) {
         if ($start == true) {
 
@@ -70,7 +148,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
             if ($isSandbox == true) {
 
-                $zoozServer =  $this->getSandboxUrl();
+                $zoozServer = $this->getSandboxUrl();
                 $url = $zoozServer . "/mobile/SecuredWebServlet";
             } else {
 
@@ -169,21 +247,23 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
         } else {
             $postFields = $this->getPostField();
         }
-
+        if (Mage::getSingleton('customer/session')->IsLoggedIn()) {
+            $session = Mage::getSingleton("customer/session");
+            $customer = $session->getCustomer();
+            $customerLoginID = $customer->getId();
+            $postFields.="&customerLoginID=$customerLoginID";
+        }
 
         if ($postFields != '') {
-		$postFields.="&featureProvider=102";
-		$postFields.="&dynamicShippingUrl=" . Mage::getUrl('zoozpayment/estimate/index');
+
+            $postFields.="&dynamicShippingUrl=" . Mage::getUrl('zoozpayment/estimate/index');
             if (Mage::getStoreConfig('sales/gift_options/allow_order', null)) {
                 $postFields.="&providerSupportedFeatures=[100,104]";
             } else {
                 $postFields.="&providerSupportedFeatures=[104]";
             }
-
-           // Mage::log($postFields);    
-
-
-
+            //Mage::log($postFields);
+            //die($postFields);
             // Flag to indicate whether sandbox environment should be used
             $isSandbox = false;
             if ($this->getIsSandBox()) {
@@ -247,7 +327,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
             parse_str($result);
 
-	//	Mage::log($result);
+            //	Mage::log($result);
 
             if ($statusCode == 0) {
                 // Get token from ZooZ server
@@ -274,20 +354,34 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
         }
     }
 
+    protected function _getCart() {
+        return Mage::getSingleton('checkout/cart');
+    }
+
     public function getPostFieldFromCart() {
 
         //Mage::log("getPostFieldFromCart");
         $postFields = "";
-        $cart = Mage::helper('checkout/cart')->getCart();
+        //   $cart = Mage::helper('checkout/cart')->getCart();
+        $cart = $this->_getCart();
+        $cart->save();
+
+        $quote = Mage::getSingleton('checkout/session')->getQuote();
+
+        $session = Mage::getSingleton('checkout/session');
+
+
+
         $itemsCount = $cart->getItemsCount();
 
         if ($itemsCount > 0) {
             $data = $cart->getQuote()->getData();
 
             //Mage::log($data); 
-            // cmd            	
+            // cmd   
+            $amount = $data['grand_total'] - Mage::helper('zoozpayment')->getshipping();
             $postFields .= "cmd=openTrx";
-            $postFields .= "&amount=" . $data['grand_total'];
+            $postFields .= "&amount=" . $amount;
             $postFields .= "&currencyCode=" . $data['quote_currency_code'];
             //$postFields .= "&taxAmount=".$data['tax_amount'];
             //shipping
@@ -333,8 +427,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 else
                     $carrier_temp = $carrier_temp_1;
             }
-
-	$postFields.="&isShippingRequired=true";
+            $postFields.="&isShippingRequired=true";
             if ($carrier_temp != '') {
                 $postFields.= "&shippingMethods=[" . $carrier_temp . "]";
             } else {
@@ -375,7 +468,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                     $postFields .= "&billingAddress.street=" . $_billingData['street'];
                     $postFields .= "&billingAddress.city=" . $_billingData['city'];
                     //$postFields .= "&billingAddress.state=22";
-                    $postFields .= "&billingAddress.state=".$_billingData['region'];
+                    $postFields .= "&billingAddress.state=" . $_billingData['region'];
                     $postFields .= "&billingAddress.country=" . $_billingData['country_id'];
                     $postFields .= "&billingAddress.zipCode=" . $_billingData['postcode'];
                 }
@@ -389,7 +482,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                     $postFields .= "&shippingAddress.street=" . $_shippingData['street'];
                     $postFields .= "&shippingAddress.city=" . $_shippingData['city'];
                     //$postFields .= "&shippingAddress.state=22";
-                    $postFields .= "&shippingAddress.state=".$_shippingData['region'];
+                    $postFields .= "&shippingAddress.state=" . $_shippingData['region'];
                     $postFields .= "&shippingAddress.country=" . $_shippingData['country_id'];
                     $postFields .= "&shippingAddress.zipCode=" . $_shippingData['postcode'];
                 }
@@ -403,7 +496,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
             // items
             $cartItems = $cart->getQuote()->getAllVisibleItems();
             $i = 1;
-            $tax = 0;
+            //       $tax = 0;
             foreach ($cartItems as $item) {
                 $itemdata = $item->getData();
 
@@ -411,19 +504,53 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 $postFields .= "&invoice.items(" . $i . ").name=" . $itemdata['name'];
                 $postFields .= "&invoice.items(" . $i . ").quantity=" . $itemdata['qty'];
                 $postFields .= "&invoice.items(" . $i . ").price=" . $itemdata['price'];
-                $tax += ($item->getData('tax_percent') * $itemdata['price'] * $itemdata['qty']) / 100;
+                //     $tax += ($item->getData('tax_percent') * $itemdata['price'] * $itemdata['qty']) / 100;
                 $i++;
             }
-        }
 
+            $quote = Mage::getSingleton('checkout/session')->getQuote();
+
+            $coupon_code = $quote->getCouponCode();
+            $discount = Mage::helper('zoozpayment')->getdiscount();
+
+            //  $discount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
+            /*
+              $postFields .= "&invoice.items(" . $i . ").id=-i";
+              $postFields .= "&invoice.items(" . $i . ").name=Discount";
+              $postFields .= "&invoice.items(" . $i . ").quantity=" . 1;
+              $postFields .= "&invoice.items(" . $i . ").price=-" . $data['subtotal'];
+              $i += 1;
+             */
+
+            if ($discount != '' && $discount > 0) {
+                $postFields .= "&invoice.items(" . $i . ").id=-i";
+                $postFields .= "&invoice.items(" . $i . ").name=Discount";
+                $postFields .= "&invoice.items(" . $i . ").quantity=" . 1;
+                $postFields .= "&invoice.items(" . $i . ").price=-" . $discount;
+                $i += 1;
+            }
+
+            if (isset($code) && $code != '') {
+
+                $postFields .= "&invoice.items(" . $i . ").id=-i";
+                $postFields .= "&invoice.items(" . $i . ").quantity=" . 1;
+                $postFields .= "&invoice.items(" . $i . ").price=-" . $amount;
+            }
+        }
+        $tax = $discount = Mage::helper('zoozpayment')->getTax();
         $postFields .= "&taxAmount=" . $tax;
 
-        //Mage::log($postFields);
+        // if (isset($code) && $code != '') {
+        $postFields.="&featureProvider=102";
+        // }
+
+
+
         return $postFields;
     }
 
     public function getPostField() {
-        //Mage::log("getPostField");
+
         $postFields = "";
         $session = Mage::getSingleton('checkout/session');
         $session->setQuoteId($session->getZoozQuoteId(true));
@@ -463,6 +590,25 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                     $i++;
                 }
 
+                $quote = Mage::getSingleton('checkout/session')->getQuote();
+                $coupon_code = $quote->getCouponCode();
+                $discount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
+
+                if ($coupon_code != '') {
+                    $postFields .= "&invoice.items(" . $i . ").id=" . $i;
+                    $postFields .= "&invoice.items(" . $i . ").name=Discount";
+                    $postFields .= "&invoice.items(" . $i . ").quantity=" . 1;
+                    $postFields .= "&invoice.items(" . $i . ").price=" . $discount;
+                }
+
+
+                if ($code != '') {
+
+                    $postFields .= "&invoice.items(" . $i . ").id=" . $i;
+                    $postFields .= "&invoice.items(" . $i . ").quantity=" . 1;
+                    $postFields .= "&invoice.items(" . $i . ").price=-" . $amount;
+                }
+
                 // billing address
                 $postFields .= "&billingAddress.firstName=" . $_billingData['firstname'];
                 $postFields .= "&billingAddress.lastName=" . $_billingData['lastname'];
@@ -471,7 +617,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 $postFields .= "&billingAddress.street=" . $_billingData['street'];
                 $postFields .= "&billingAddress.city=" . $_billingData['city'];
                 //$postFields .= "&billingAddress.state=22";
-                $postFields .= "&billingAddress.state=".$_billingData['region'];
+                $postFields .= "&billingAddress.state=" . $_billingData['region'];
                 $postFields .= "&billingAddress.country=" . $_billingData['country_id'];
                 $postFields .= "&billingAddress.zipCode=" . $_billingData['postcode'];
 
@@ -483,7 +629,7 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 $postFields .= "&shippingAddress.street=" . $_shippingData['street'];
                 $postFields .= "&shippingAddress.city=" . $_shippingData['city'];
                 //$postFields .= "&shippingAddress.state=22";
-                $postFields .= "&shippingAddress.state=".$_shippingData['region'];
+                $postFields .= "&shippingAddress.state=" . $_shippingData['region'];
                 $postFields .= "&shippingAddress.country=" . $_shippingData['country_id'];
                 $postFields .= "&shippingAddress.zipCode=" . $_shippingData['postcode'];
             }
@@ -576,12 +722,17 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $info = $zooz->getTransactionDetailsByTransactionID($transactionID);
 
         //Get Gift information from Params
-        $giftInfo =  $params['gift'];     
-       
+
+        if (isset($params['gift']) && $params['gift'] != '')
+            $giftInfo = $params['gift'];
+        else
+            $giftInfo = null;
         //
-        Mage::getModel('zoozpayment/order')->saveOrder($info,$giftInfo);
+        Mage::getModel('zoozpayment/order')->saveOrder($info, $giftInfo);
         // create order with billding return
         //Mage::log($result);
+        Mage::getSingleton('core/session')->setZoozInfo($info);
+
         return $statusCode;
     }
 

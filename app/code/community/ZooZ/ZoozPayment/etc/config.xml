@@ -16,6 +16,12 @@
             <zoozpayment>
                 <class>ZooZ_ZoozPayment_Model</class>
             </zoozpayment>
+            <tax>
+                <rewrite>
+                    <!-- Model -->
+                    <observer>ZooZ_ZoozPayment_Model_Observer</observer>
+                </rewrite>
+            </tax>   
         </models>
         <helpers>
             <zoozpayment>

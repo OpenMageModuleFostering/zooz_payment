@@ -29,54 +29,113 @@ class ZooZ_ZoozPayment_EstimateController extends Mage_Catalog_ProductController
      *
      * Initializes the product and passes data to estimate model in block
      */
-    public function addProduct() {
-        return $this->_initProduct('');
+    protected $productId;
+
+    protected function _initProduct() {
+        $params = new Varien_Object();
+        $productId = $this->productId;
+        //return Mage::helper('catalog/product')->initProduct($productId, $this, $params);
+        return Mage::getModel('catalog/product')->load($productId);
     }
 
-    protected function _initProduct($productId) {
-        $params = new Varien_Object();
-        return Mage::helper('catalog/product')->initProduct($productId, $this, $params);
+    public function quoteAction() {
+        echo $discount = Mage::helper('zoozpayment')->getdiscount();
+        die();
+        $quote = Mage::getSingleton('checkout/session')->getQuote();
+        $payment = $quote->getPayment();
+
+        $payment->setMethod('zoozpayment');
+//       
+        $quote->collectTotals();
+        $service = Mage::getModel('sales/service_quote', $quote);
+        $service->submitAll();
+//        
+        $cart = Mage::helper('checkout/cart')->getCart();
+        $data = $cart->getQuote()->getData();
+
+        //$quote = Mage::getSingleton('checkout/session')->getQuote();
+        //  print_r($quote->getData());
+//        $rewardsQuote = Mage::getSingleton('rewards/session')->getQuote();
+//         print_r($rewardsQuote);
+//        $cart = Mage::getSingleton('checkout/cart');
+//         $rewardsQuote = Mage::getModel('rewards/sales_quote');
+//            
+//            $rewardsQuote->updateItemCatalogPoints( $cart->getQuote() );
+//            
+//			$cart->getQuote ()->collectTotals ();
+//			$cart->getQuote ()->getShippingAddress ()->setCollectShippingRates ( true );
+//			$cart->getQuote ()->getShippingAddress ()->collectShippingRates();
+//			
+//            $rewardsQuote->updateDisabledEarnings( $cart->getQuote() );
+        //   $cart = Mage::getSingleton('checkout/cart');
+        //  $rewardsQuote->updateItemCatalogPoints($cart->getQuote());
+        //  $rewardsQuote->setPointsSpending('500');
+        // $cart = Mage::getSingleton('checkout/cart');
+        // $rewardsQuote = Mage::getModel('rewards/sales_quote');
+//
+//        $rewardsQuote->updateItemCatalogPoints($cart->getQuote());
+//
+//        $cart->getQuote()->collectTotals();
+//        $cart->getQuote()->getShippingAddress()->setCollectShippingRates(true);
+//        $cart->getQuote()->getShippingAddress()->collectShippingRates();
+//
+//        $rewardsQuote->updateDisabledEarnings($cart->getQuote());
+        //     echo $rewardsQuote->getTotalPointsSpendingAsStringList()."kkkk";
+        // print_r($rewardsQuote->updateShoppingCartPoints($cart));
+        //magento.zooz.com/magentoe/index.php/zoozpayment/index/test/
     }
 
     public function indexAction() {
-        //  $pro = $this->addProduct();
+        Mage::log("Received Estimate controller index action");
+        $data_json = $this->getRequest()->getPost('data');
+        if ($data_json == '') {
+            $data_json = file_get_contents('php://input');
+        }
+        Mage::log("Json received" . $data_json);
 
-      // $data_json = $this->getRequest()->getPost('data');
-        //  $data_json = $this->getRequest()->getContent();
-	$data_json = file_get_contents('php://input');
-	Mage::log($data_json);
-	$variable_post = json_decode($data_json);
+
+        if ($data_json == '') {
+            Mage::log("Could not receive data.");
+            return;
+        }
+        $variable_post = json_decode($data_json);
         $arr_addressinfo = get_object_vars($variable_post->estimate);
         $arr_cart = $variable_post->cart;
         $this->getResponse()->setHeader('Content-type', 'application/json');
+        Mage::log("Loading layout");
         $this->loadLayout(false);
         $block = $this->getLayout()->getBlock('shipping.estimate.result');
-
+        Mage::log("Block receieved");
         if ($block) {
-	
+
             $estimate = $block->getEstimate();
             foreach ($arr_cart as $pro) {
-                 $product = $this->_initProduct($pro->invoiceItemId);
-                if ($pro->options) {
-                   
+                Mage::log("Itterating product ID: " . $pro->invoiceItemId);
+                if ($pro->invoiceItemId == '-i') {
+                    continue;
+                }
+
+                $this->productId = $pro->invoiceItemId;
+
+                $product = $this->_initProduct($pro->invoiceItemId);
+                if (isset($pro->options) && $pro->options != '') {
+
                     $params = get_object_vars($pro->options);
                     $pro_cart = array('product' => $pro->invoiceItemId, 'qty' => $pro->qty, 'options' => $params);
-                   
                 } else {
-                
+
                     $pro_cart = array('product' => $pro->invoiceItemId, 'qty' => $pro->qty);
-                    
                 }
-			
+
                 $product->setAddToCartInfo($pro_cart);
-                    $estimate->setProduct($product);
-                    Mage::unregister('current_category');
-                    Mage::unregister('current_product');
-                    Mage::unregister('product');
+                $estimate->setProduct($product);
+                Mage::unregister('current_category');
+                Mage::unregister('current_product');
+                Mage::unregister('product');
             }
             ///$addressInfo = $arr_addressinfo;
-            $addressConvert = array("city"=> $arr_addressinfo["city"],"region_id"=>$arr_addressinfo["stateName"],"postcode"=>$arr_addressinfo["zipCode"],"country_id"=>$arr_addressinfo["countryCode"]);
-         
+            $addressConvert = array("city" => isset($arr_addressinfo["city"]) ? $arr_addressinfo["city"] : "", "region_id" => isset($arr_addressinfo["stateName"]) ? $arr_addressinfo["stateName"] : "", "postcode" => isset($arr_addressinfo["zipCode"]) ? $arr_addressinfo["zipCode"] : "", "country_id" => isset($arr_addressinfo["countryCode"]) ? $arr_addressinfo["countryCode"] : "");
+            Mage::log("Address converted");
             $estimate->setAddressInfo((array) $addressConvert);
             $block->getSession()->setFormValues($addressConvert);
             try {
