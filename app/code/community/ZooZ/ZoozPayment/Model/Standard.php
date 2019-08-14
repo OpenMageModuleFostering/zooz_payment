@@ -333,8 +333,9 @@ class ZooZ_ZoozPayment_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 else
                     $carrier_temp = $carrier_temp_1;
             }
+
+	$postFields.="&isShippingRequired=true";
             if ($carrier_temp != '') {
-                $postFields.="&isShippingRequired=true";
                 $postFields.= "&shippingMethods=[" . $carrier_temp . "]";
             } else {
                 $postFields.="&isShippingRequired=false";

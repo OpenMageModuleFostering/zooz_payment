@@ -41,7 +41,7 @@ class ZooZ_ZoozPayment_EstimateController extends Mage_Catalog_ProductController
     public function indexAction() {
         //  $pro = $this->addProduct();
 
-        //  $data_json = $this->getRequest()->getPost('data');
+      // $data_json = $this->getRequest()->getPost('data');
         //  $data_json = $this->getRequest()->getContent();
 	$data_json = file_get_contents('php://input');
 	Mage::log($data_json);
@@ -75,7 +75,6 @@ class ZooZ_ZoozPayment_EstimateController extends Mage_Catalog_ProductController
                     Mage::unregister('product');
             }
             ///$addressInfo = $arr_addressinfo;
-				
             $addressConvert = array("city"=> $arr_addressinfo["city"],"region_id"=>$arr_addressinfo["stateName"],"postcode"=>$arr_addressinfo["zipCode"],"country_id"=>$arr_addressinfo["countryCode"]);
          
             $estimate->setAddressInfo((array) $addressConvert);

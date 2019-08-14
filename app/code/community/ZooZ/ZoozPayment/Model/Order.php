@@ -91,7 +91,7 @@ class ZooZ_ZoozPayment_Model_Order extends Mage_Core_Model_Abstract {
                         ->setLastname($shipp_address->lastName)
                         ->setStreet($shipp_address->street)
                         ->setCity($shipp_address->city)
-                        ->setCountry_id($shipp_address->country)
+                        ->setCountry_id($shipp_address->countryCode)
                         ->setRegion($shipp_address->state)
                         ->setPostcode($shipp_address->zipCode)
                         ->setTelephone($user->phoneNumber);
