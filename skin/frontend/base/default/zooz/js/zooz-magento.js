@@ -7,14 +7,14 @@ function startZooz(isSandbox, formObject, url, uniqueId, returnUrl, cancelUrl){
 	//	if(zooz_button_color == 'gold')
 	//		customStyle = customStyleB;
 		
-		jQuery('#zooz-payment-loading').show();
+		jQuery('.zooz-payment-loading').show();
         	jQuery.ajax({
             		type: formObject.attr('method'),
             		url: url,
             		data: formObject.serialize(),
             		cache: false,
 			success: function (response) {
-            			jQuery('#zooz-payment-loading').hide();
+            			jQuery('.zooz-payment-loading').hide();
                 		eval(response);
 				zoozStartCheckout({
 					token : data.token,
