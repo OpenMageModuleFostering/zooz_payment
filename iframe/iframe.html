@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="https://app.zooz.com/mobile/checkoutapi/js/checkout-ext-api.js" ></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="jquery.creditCardValidator.js"></script>
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300,400,500,700,600" />
+     <link rel="stylesheet" href="zoozpayments/zoozpayments.css" />
+    
+    
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+        #CreditCardInfo {
+            color: #636363;
+        }
+        .error {
+            color: #df280a;
+            font-size: 13px;
+            margin: 5px 0 0;
+        }
+        .fields.vertical, .fields.horizontal {
+            margin: 0px;
+            padding: 0px;
+            list-style: outside none none;
+        }
+
+        ol, label, li {
+            margin: 0px;
+            padding: 0px;
+            border: 0px none;
+            outline: 0px none;
+            background: transparent none repeat scroll 0% 0%;
+            box-sizing: border-box;
+        }
+
+        .fields.horizontal li {
+            display: block;
+            margin: 0 0 10px;
+            overflow: hidden;
+        }
+
+        .fields.horizontal label {
+            display: block;
+            font-family: "Raleway","Helvetica Neue",Verdana,Arial,sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;;
+        }
+        label.required::after {
+            color: #df280a;
+            content: " *";
+            font-family: "Helvetica Neue",Verdana,Arial,sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        input[type="text"] {
+            -moz-appearance: none;
+            background: #ffffff none repeat scroll 0 0;
+            border: 1px solid silver;
+            border-radius: 2px;
+            font-size: 15px;
+            height: 30px;
+            max-width: 100%;
+            padding: 0 8px;
+            width: 270px;
+        }
+        input[type="text"]:focus {
+            border: 1px solid #3399cc;
+        }
+        .exp {
+            float: left;
+            margin-right: 5px;
+            max-width: 365px;
+        }
+        select {
+            background: #ffffff none repeat scroll 0 0;
+            border: 1px solid silver;
+            border-radius: 2px;
+            color: inherit;
+            font-size: 15px;
+            padding: 3px 0;
+        }
+        select#month {
+            margin-right: 10px;
+            width: 120px;
+        }
+        select#year {
+            width: 96px;
+        }
+          #canSaveBlock label {
+              display:inline-block;
+          }
+    </style>
+</head>
+<body>
+    <form id="CreditCardInfo" runat="server">
+        <ol class="fields horizontal">
+            <li>
+                <label class="label required" id="ccNumber">Credit Card Number:
+                </label>
+                <div class="credit-card-types">
+       			 <ul id="icons-card-types">
+       			    <li class="card-type card-type-VI">
+                    Visa 
+                    </li>
+                    <li class="card-type card-type-MC">
+                        MasterCard
+                    </li>
+                    <li class="card-type card-type-AE">
+                        American Express
+                    </li>
+                    <li class="card-type card-type-DI">
+                        Discover
+                    </li>
+                     <li class="card-type card-type-DC">
+                         Diners
+                     </li>
+                     <li class="card-type card-type-JCB">
+                         JCB
+                     </li>
+                </ul>
+        <input type="hidden" name="payment[cc_type]" value="" id="payments_cc_type" autocomplete="off">
+    </div>
+                <input id="tbCreditCardNumber" name="tbCreditCardNumber" type="text" maxlength="16"/>
+                <label class="error" id="creditCardError" style="display:none;">Please enter a valid CreditCard Number</label>
+            </li>
+            <li>
+                <label class="label required" id="ccExpiration">Expiration Date:
+                </label>
+                <div class="exp month">
+                    <select id="month">
+                    </select>
+                    <label class="error" id="expMonthError" style="display:none;">Please select a valid month</label>
+                </div>
+                <div class="exp year">
+                    <select id="year">
+                    </select>
+                    <label class="error" id="expYearError" style="display:none;">Please select a valid year</label>
+                </div>
+            </li>
+            <li>
+                <label class="label required" id="cvv">Card Verification Number:
+                </label>
+                <input id="tbCVV" type="text" maxlength="4" style="width:50px;"/>
+                <label class="error" id="cvvError" style="display:none;">Please enter a valid Card Verification Number</label>
+            </li>
+            <li id="canSaveBlock" style="display: none;">
+                <div class="input-box">
+                    <div class="v-fix">
+                        <input type="checkbox" title="Save this payment method for future use" id="cc_save_data" name="payment" value="1" />
+                        <label for="cc_save_data">Save this payment method for future use</label>
+                    </div>
+                </div>
+            </li>
+        </ol>
+    </form>
+    <script type="text/javascript" language="javascript">
+			window.addEventListener("message", handleMessage, false);
+            window.addEventListener("load", load, false);
+            var canSaveCard = getQueryVariable("save");
+            var availableCardTypes = getQueryVariable("cards").split(',');
+            var zoozApi;
+			window.onload = function () {
+                $('.card-type').each(function(index, el){
+                    var classes = $(el).attr('class').split(' ')[1].split('-');
+
+                    if(availableCardTypes.indexOf(classes[2]) == -1) {
+                        $(el).hide();
+                    }
+                });
+                if(canSaveCard == "1")
+                $('#canSaveBlock').show();
+                var year = new Date().getFullYear();
+
+                $('#year').append($('<option />').val(0).html('Year'));
+                for (i = year; i < year + 19; i++){
+                    $('#year').append($('<option />').val(i).html(i));
+                }               
+
+                //populate our months select box
+                var month = 1;
+                $('#month').append($('<option />').val(0).html('Month'));
+                for (i = month; i <= 12; i++){
+                    $('#month').append($('<option />').val(i).html(pad((i).toString(), 2)));
+                }
+
+		    };
+
+            function pad(number, length) {   
+                var str = '' + number;
+                while (str.length < length) {
+                    str = '0' + str;
+                }   
+                return str;
+            }
+
+            function getQueryVariable(variable) {
+                var query = window.location.search.substring(1);
+                var vars = query.split('&');
+                for (var i = 0; i < vars.length; i++) {
+                    var pair = vars[i].split('=');
+                    if (decodeURIComponent(pair[0]) == variable) {
+                        return decodeURIComponent(pair[1]);
+                    }
+                }
+                console.log('Query variable %s not found', variable);
+            }
+                
+
+            function addPaymentMethod(jsonData, eventOrigin) {
+                var succFunc = function (response) {
+                    var maskedCCNumber = response.binNumber + 'xxxxxx' + response.lastFourDigits;
+
+                    var dataToSend = {
+                        action: "add",
+                        success: true,
+                        paymentMethodStatus: response.paymentMethodStatus.toString(),
+                        paymentMethodToken: response.paymentMethodToken,
+                        month: response.expirationMonth,
+                        year: response.expirationYear,
+                        maskedCCNumber: maskedCCNumber
+                    };
+
+                    parent.postMessage(dataToSend, eventOrigin);
+                };
+
+                var failFunc = function (response) {
+                    var processorError = '';
+                    if(response.processorError != null) {
+                        processorError = "DeclineCode: " + response.processorError.declineCode.toString() + "; DeclineReason: " + response.processorError.declineReason.toString();
+                    }
+
+                    var dataToSend = {
+                        action: "add",
+                        success: false,
+                        responseError: response.responseErrorCode.toString() + ": " + response.errorDescription.toString(),
+                        processorError: processorError
+                    };
+
+                    parent.postMessage(dataToSend, eventOrigin);
+                };
+
+                var status = zoozApi.addPaymentMethod(jsonData, succFunc, failFunc);
+
+                if (status.code === 0) {
+
+                } else if (status.code > 0) {
+                    var processorError = '';
+                    var dataToSend = {
+                        action: "add",
+                        success: false,
+                        responseError: "addPaymentMethod() request has not been initiated. Please try again.",
+                        processorError: processorError
+                    };
+
+                    parent.postMessage(dataToSend, eventOrigin);
+                }
+            }   
+
+        function handleMessage (event) {
+            var data = event.data;
+
+            var initParams = {
+                isSandbox: data.isSandbox, //Please note: when going live this value must change to false
+                uniqueId: data.uniqueId // App's unique ID as registered in the Zooz developer portal
+            };
+            if(zoozApi == undefined) {
+                zoozApi = new Zooz.Ext.External(initParams);
+            }
+
+            if(data.action == "submit") {
+                hideErrorText();
+                
+                //alert(data.action + data.customerToken + data.email + data.name);
+
+                var cardNumber = $('#tbCreditCardNumber').val();
+                var cvv = $('#tbCVV').val();
+                var month = $('#month').val();
+                var year = $('#year').val();
+                var isValid = true;
+
+                if(!cardNumber || !validateCCNumber(cardNumber)) {
+                    $('#creditCardError').show();
+                    isValid = false;
+                }
+
+                if(!cvv || !validateCVV(cvv)) {
+                    $('#cvvError').show();
+                    isValid = false;
+                }
+
+                if(month == "0") {
+                    $('#expMonthError').show();
+                    isValid = false;
+                }
+
+                if(year == "0") {
+                    $('#expYearError').show();
+                    isValid = false;
+                }
+
+                if(isValid) {
+                    var jSONdata = {
+                        paymentToken:data.customerToken,
+                        email: data.email,
+                        paymentMethod: {
+                            paymentMethodType: "CreditCard",
+                            paymentMethodDetails: {
+                                cardNumber: cardNumber,
+                                cardHolderName: data.name,
+                                month: month,
+                                year: year,
+                                cvvNumber: cvv
+                            },
+                            configuration: {
+                                rememberPaymentMethod: $("#cc_save_data").is(":checked")
+                            }
+                        }
+                    };
+
+                    addPaymentMethod(jSONdata, event.origin);
+                } else {
+                    var dataToSend = {
+                        action: "resize",
+                        width: $('body').width(),
+                        height: $('body').height() + 50
+                    };
+
+                    parent.postMessage(dataToSend, event.origin);
+                }
+            } else if(data.action == "translate" && data.elements != null) {
+
+                for(var i = 0; i < data.elements.length; i++) {
+                    var element = data.elements[i];
+                    
+                    if(element != null) {                
+                        $('#' + element.elementId).text(element.labelText); 
+                    }
+                }
+            }
+        }
+
+        function load() {
+        }
+
+        function validateCCNumber(cardNumber) {            
+            var ccNumber = new RegExp('^[0-9]*$');
+
+            if(!ccNumber.test(cardNumber)) {
+                return false;                
+            } else {
+                return true;
+            }
+            return true;
+        }
+
+        function validateCVV(cvv) {            
+            var cvvTemp = new RegExp('^[0-9]{3,4}$');
+
+            if(!cvvTemp.test(cvv)) {
+                return false;                
+            } else {
+                return true;
+            }
+            return true;
+        }
+
+        function hideErrorText() {
+            $('#creditCardError').hide();
+            $('#cvvError').hide();
+            $('#expMonthError').hide();
+            $('#expYearError').hide();
+        }        
+
+   
+    jQuery(document).ready(function() {
+
+        jQuery('#tbCreditCardNumber').validateCreditCard(function (result) {
+            if (result.card_type != null) {
+                var cardClass = 'card-type-' + result.card_type.name;
+                if(result.card_type.name=="diners_club_carte_blanche" || result.card_type.name=="diners_club_international") var cardClass = 'card-type-DC';
+
+                jQuery('#icons-card-types li').removeClass(function (index, css) {
+                    return (css.match(/(^|\s)active-card-type-\S+/g) || []).join(' ');
+                });
+                jQuery('.' + cardClass).addClass('active-' + cardClass);
+
+                jQuery('input#payments_cc_type').attr("value", result.card_type.name);
+            }
+        });
+    });
+</script>  
+</body>
+</html>
+

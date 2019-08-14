@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * ZooZ Payments Integration
+ *
+ * @category    Zooz
+ * @package     Zooz_Payments
+ */-->
+<config>
+    <modules>
+        <Zooz_Payments>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Payment/>
+            </depends>
+        </Zooz_Payments>
+    </modules>
+</config>

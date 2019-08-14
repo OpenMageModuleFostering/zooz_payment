@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * ZooZ Payments Integration
+ *
+ * @category    Zooz
+ * @package     Zooz_Payments
+ */
+
+-->
+<layout version="0.1.0">
+    <checkout_onepage_index>
+        <reference name="head">
+            <action method="addItem" ifconfig="payment/payments/include_jquery">
+                <type>js</type>
+                <name>zoozpayments/jquery.js</name>
+            </action>
+            <action method="addItem" ifconfig="payment/payments/include_jquery">
+                <type>js</type>
+                <name>zoozpayments/noconflict.js</name>
+            </action>
+
+            <action method="addCss"><stylesheet>css/zoozpayments/zoozpayments.css</stylesheet></action>
+            <action method="addJs"><file>zoozpayments/jquery.creditCardValidator.js</file></action>
+        </reference>
+        <reference name="checkout.onepage.payment">
+            <action method="setTemplate"><template>zoozpayments/checkout/onepage/payment.phtml</template></action>
+            <block type="payments/form_payments" name="zooz.payments" />
+        </reference>
+    </checkout_onepage_index>
+    
+    <customer_account>
+        <reference name="head">
+            <action method="addCss"><stylesheet>css/zoozpayments/zoozpayments.css</stylesheet></action>
+            <action method="addJs"><file>zoozpayments/jquery.creditCardValidator.js</file></action>
+        </reference>
+        <reference name="customer_account_navigation">
+            <action method="addLink">
+                <name>creditcards</name>
+                <path>payments/customer/creditcards</path>
+                <label>Credit Cards</label>
+            </action>
+        </reference>
+    </customer_account>
+    
+    <payments_customer_creditcards>
+       <update handle="customer_account"/>
+       <reference name="my.account.wrapper">
+           <block type="payments/customer_creditcard" name="customer_credit_cards" template="zoozpayments/customer/creditcard/list.phtml">
+            <block type="payments/form_payments" name="customer_iframe_card" template="zoozpayments/customer/creditcard/iframe.phtml" />
+           </block>
+           <block type="customer/account_dashboard" name="customer.account.link.back" template="customer/account/link/back.phtml" /> <!-- add a back link -->
+       </reference>
+   </payments_customer_creditcards>
+   
+   <payments_customer_editcard>
+       <update handle="customer_account"/>
+       <reference name="my.account.wrapper">
+           <block type="payments/customer_creditcard" name="customer_credit_cards" template="zoozpayments/customer/creditcard/edit.phtml"/>
+       </reference>
+   </payments_customer_editcard>
+</layout>

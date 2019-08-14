@@ -1,0 +1,248 @@
+/* Frontend - payment process */
+#payment_form_payments {
+    clear: both;
+    width: 100%;
+}
+
+#CreditCardInfo {
+    color: #636363;
+    padding-top: 10px;
+}
+
+div.credit-card-types {
+    float: left;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+ul#icons-card-types {
+    width: 100%;
+    clear: both;
+}
+
+ul#icons-card-types,
+ul#icons-card-types li {
+    display: block;
+    float: left;
+    padding-left: 0px;
+}
+
+ul#icons-card-types li {
+    width: 40px;
+    height: 25px;
+    text-indent: -5555px;
+    margin-right: 3px;
+    background: url('zooz-cc.png') 0 0 no-repeat;
+}
+
+ul#icons-card-types li.card-type-AE {
+    background-position: -100px -35px;
+}
+
+ul#icons-card-types li.active-card-type-AE {
+    background-position: -100px 0;
+}
+
+ul#icons-card-types li.card-type-VI {
+    background-position: 0 -35px;
+}
+
+ul#icons-card-types li.active-card-type-VI {
+    background-position: 0 0;
+}
+
+ul#icons-card-types li.card-type-MC {
+    background-position: -50px -35px;
+}
+
+ul#icons-card-types li.active-card-type-MC {
+    background-position: -50px 0;
+}
+
+ul#icons-card-types li.card-type-DI {
+    background-position: -150px -35px;
+}
+
+
+
+ul#icons-card-types li.active-card-type-DI {
+    background-position: -150px 0;
+}
+
+ul#icons-card-types li.card-type-JCB {
+    background-position: -200px -35px;
+}
+
+ul#icons-card-types li.active-card-type-JCB {
+    background-position: -200px 0;
+}
+
+ul#icons-card-types li.card-type-DC {
+    background-position: -250px -35px;
+}
+
+ul#icons-card-types li.active-card-type-DC {
+    background-position: -250px 0;
+}
+
+select.month,
+select.year,
+select#payments_saved_card {
+    padding: 3px 0;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    -ms-border-radius: 2px;
+    -o-border-radius: 2px;
+    border-radius: 2px;
+    border: 1px solid silver;
+    background: #FFFFFF;
+    font-size: 15px;
+}
+
+select#payments_saved_card {
+    width: 120px;
+}
+
+/* Customer account */
+.creditcard-saved li.item {
+    clear: both;
+    float: left;
+    width: 96%;
+    margin: 0 0 10px 0;
+    padding: 2%;
+    border: 1px solid #ddd;
+}
+
+.creditcard-saved li.no-entries {
+    border: none;
+    width: 100%;
+    padding: 0;
+}
+
+.creditcard-saved li.item title {
+    width: 100%;
+    clear: both;
+    float: left;
+    margin-bottom: 5px;
+}
+
+li#payments_cc_type_saved_cvv_div label::after,
+li#payments_cc_type_cvv_div label::after {
+    color: #df280a;
+    content: " *";
+    font-family: "Helvetica Neue",Verdana,Arial,sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+li#payments_cc_type_saved_cvv_div label em,
+li#payments_cc_type_cvv_div label em {
+    display: none;
+}
+
+#payments_cc_save_data .input-box {
+    clear: both;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+#payments_cc_save_data .input-box label,
+#payments_cc_save_data .input-box input {
+    float: left;
+    display: block;
+}
+
+#payments_cc_save_data .input-box input {
+    margin: 3px 7px 0 0;
+    border: 1px solid silver;
+}
+
+.creditcard-saved li.item div.title h3,
+.creditcard-saved li.item div.title div.exp-date {
+    width: 45%;
+    font-size: 16px;
+    font-weight: bold;
+    float: left;
+}
+
+.creditcard-saved li.item div.title div.exp-date {
+    float: right;
+    text-align: right;
+}
+
+.creditcard-saved li.item div.card-details {
+    clear: both;
+    float: left;
+    width: 100%;
+}
+
+.creditcard-saved li.item .button-set {
+    clear: both;
+    float: left;
+    width: 100%;
+    margin: 5px 0 0 0;
+    border-top: 1px solid #ddd;
+}
+
+.creditcard-saved li.item .button-set p {
+    float: right;
+    margin-top: 5px;
+}
+
+.creditcard-saved li.item .button-set p a {
+    color: #fff;
+    display: block;
+    background-color: #3399cc;
+    padding: 4px 7px;
+    text-transform: uppercase;
+    margin-left: 5px;
+    font-size: 13px;
+}
+
+.creditcard-saved li.item .button-set p a:hover {
+    background-color: #2E8AB8;
+    text-decoration: none;
+}
+
+.creditcard-new select,
+.creditcard-edit select {
+    padding: 3px 0;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    -ms-border-radius: 2px;
+    -o-border-radius: 2px;
+    border-radius: 2px;
+    border: 1px solid silver;
+    background: #FFFFFF;
+    font-size: 15px;
+}
+
+.creditcard-new select:focus,
+.creditcard-edit:focus {
+    border: 1px solid #3399cc;
+}
+
+.creditcard-new select.month,
+.creditcard-edit select.month {
+    width: 150px;
+    margin-right: 10px;
+}
+.creditcard-new select.year,
+.creditcard-edit select.year {
+    width: 96px;
+}
+
+.creditcard-new input.cvv,
+.creditcard-edit input.cvv {
+  width: 5em !important;
+}
+
+/* saved / new credit card forms */
+ul.cc-saved-form {
+    display: block;
+}
+
+ul.cc-new-form {
+    display: none;
+}

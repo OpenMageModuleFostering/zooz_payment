@@ -1,13 +1,13 @@
 {
     "name": "OpenMageModuleFostering/ZooZ_payment",
     "type": "magento-module",
-    "license": "GNU-General-Public-License",
+    "license": "freeware",
     "homepage": "",
-    "description": "Checkout module for higher conversions",
+    "description": "Zooz payments package",
     "authors": [
     {
-        "name": "ZooZ Payments",
-        "email": "info@zooz.com"
+        "name": "CreativeMinds",
+        "email": "wojtek@cminds.com"
     }
 ],
     "suggest": {
