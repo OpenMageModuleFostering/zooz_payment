@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/ZooZ_payment",
+    "name": "OpenMageModuleFostering\/ZooZ_payment",
     "type": "magento-module",
     "license": "freeware",
     "homepage": "",
     "description": "Zooz payments package",
     "authors": [
-    {
-        "name": "CreativeMinds",
-        "email": "wojtek@cminds.com"
-    }
-],
+        {
+            "name": "CreativeMinds",
+            "email": "wojtek@cminds.com"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
